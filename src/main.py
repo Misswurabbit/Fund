@@ -1,6 +1,6 @@
 import pandas as pd
 from os import path
-from Project.src.config import Config
+from config import Config
 
 original_nav_csv = path.abspath(path.join(__file__, "../../../data/original/ODS_MDS.BSHEET.csv"))
 file = pd.read_csv(original_nav_csv, encoding="gb18030")

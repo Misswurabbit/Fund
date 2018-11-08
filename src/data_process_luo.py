@@ -1,4 +1,4 @@
-from Project.src.config import Config
+from config import Config
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 import numpy as np
@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 # import warnings
 # warnings.filterwarnings("ignore")
+train_days = 90
+test_days = 30
+total_days = train_days + test_days
 
 
 def data_process():
@@ -38,14 +41,20 @@ def each_fund_process(name, train_data, work_date_list):
     last_data_pos = work_date_list.index(last_data)
     work_date_list = work_date_list[first_date_pos:last_data_pos + 1]
     date = pd.DataFrame(data=work_date_list, columns=['PUBLISHDATE'])
+    train_data['real'] = True
     train_data = train_data.merge(date, how='right', on=['PUBLISHDATE'])
     train_data.sort_values(by="PUBLISHDATE", ascending=True, inplace=True)
     train_data.set_index(keys='PUBLISHDATE', inplace=True)
+    train_data.fillna({'real':False},inplace= True)
     train_data = model_insert(train_data, name)
-    train_data['max'] = train_data.rolling(window=30).max().NAV1
-    train_data['min'] = train_data.rolling(window=30).min().NAV1
-    train_data['max'] = train_data['max'].shift(-30)
-    train_data['min'] = train_data['min'].shift(-30)
+    train_data['max'] = train_data.rolling(window=test_days).max().NAV1
+    train_data['min'] = train_data.rolling(window=test_days).min().NAV1
+    train_data['train'] = train_data.real.rolling(window=train_days).sum()
+    train_data['test'] = train_data.real.rolling(window=test_days).sum()
+    train_data['max'] = train_data['max'].shift(-test_days)
+    train_data['min'] = train_data['min'].shift(-test_days)
+    train_data['train'] = train_data['train'].shift(-train_days)
+    train_data['test'] = train_data['test'].shift(-total_days)
     train_data['max_ratio'] = train_data.apply(divide_max, axis=1)
     train_data['min_ratio'] = train_data.apply(divide_min, axis=1)
     train_data['p5'] = train_data.max_ratio > 1.05
@@ -55,11 +64,11 @@ def each_fund_process(name, train_data, work_date_list):
     train_data['p-10'] = train_data.min_ratio < 0.9
     train_data['p-15'] = train_data.min_ratio < 0.85
     sample_list = []
-    for i in range(train_data.shape[0] - 120):
-        sample_list.append(train_data.iloc[i:i + 90, 0].tolist())
+    for i in range(train_data.shape[0] - total_days):
+        sample_list.append(train_data.iloc[i:i + train_days, 0].tolist())
     feature = pd.DataFrame(data=sample_list)
-    feature.index = train_data.index.tolist()[:train_data.shape[0] - 120]
-    train = pd.concat([feature, train_data.iloc[:train_data.shape[0] - 120, -6:]], axis=1)
+    feature.index = train_data.index.tolist()[:train_data.shape[0] - total_days]
+    train = pd.concat([feature, train_data.iloc[:train_data.shape[0] - total_days].loc[:,['train','test','p5','p10','p15','p-5','p-10','p-15']]], axis=1)
     for i in range(90):
         train[i] = train.apply(divide, args=[i], axis=1)
     train.to_csv("../data/processed_data/" + str(name) + "__processed_data.csv")
@@ -99,7 +108,7 @@ def model_insert(fund_nav, name):
     num = 0
     for date in date_index:
         if pd.isna(fund_nav.loc[str(date)]).at["NAV1"]:
-            fund_nav.loc[str(date)] = result[num]
+            fund_nav.loc[str(date),"NAV1"] = result[num]
             num += 1
 
     fig = plt.figure()
