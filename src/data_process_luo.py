@@ -29,12 +29,15 @@ def data_process():
             print("Over")
         except:
             with open("log.txt", "a+") as f:
+                f.seek(0)
+                f.truncate()
                 f.write("wrong file:"+str(name)+" \n")
 
 
 def each_fund_process(name, train_data, work_date_list):
     train_data = train_data[train_data["SYMBOL"] == name][["PUBLISHDATE", "NAV1"]]
     train_data.sort_values(by="PUBLISHDATE", ascending=True, inplace=True)
+    train_data["SYMBOL"] = [name for num in range(len(train_data))]
     first_date = train_data.iloc[0, 0]
     last_data = train_data.iloc[-1, 0]
     first_date_pos = work_date_list.index(first_date)
@@ -72,7 +75,7 @@ def each_fund_process(name, train_data, work_date_list):
     for i in range(90):
         train[i] = train.apply(divide, args=[i], axis=1)
     train.to_csv("../data/processed_data/" + str(name) + "__processed_data.csv")
-    print(str(name) + "OVer!!!!")
+    print(str(name) + "  Over!!!!")
 
 
 def divide(item, i):
