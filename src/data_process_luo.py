@@ -56,10 +56,12 @@ def each_fund_process(name, train_data, work_date_list):
     train_data['test'] = train_data.real.rolling(window=test_days).sum()
     train_data['max'] = train_data['max'].shift(-test_days)
     train_data['min'] = train_data['min'].shift(-test_days)
-    train_data['train'] = train_data['train'].shift(-train_days)
-    train_data['test'] = train_data['test'].shift(-total_days)
     train_data['max_ratio'] = train_data.apply(divide_max, axis=1)
     train_data['min_ratio'] = train_data.apply(divide_min, axis=1)
+    train_data['max_ratio'] = train_data['max_ratio'].shift(-train_days + 1)
+    train_data['min_ratio'] = train_data['min_ratio'].shift(-train_days + 1)
+    train_data['train'] = train_data['train'].shift(-train_days + 1)
+    train_data['test'] = train_data['test'].shift(-total_days + 1)
     train_data['p5'] = train_data.max_ratio > 1.05
     train_data['p10'] = train_data.max_ratio > 1.1
     train_data['p15'] = train_data.max_ratio > 1.15
@@ -71,7 +73,7 @@ def each_fund_process(name, train_data, work_date_list):
         sample_list.append(train_data.iloc[i:i + train_days, 0].tolist())
     feature = pd.DataFrame(data=sample_list)
     feature.index = train_data.index.tolist()[:train_data.shape[0] - total_days]
-    train = pd.concat([feature, train_data.iloc[:train_data.shape[0] - total_days].loc[:,['train','test','p5','p10','p15','p-5','p-10','p-15']]], axis=1)
+    train = pd.concat([feature, train_data.iloc[:train_data.shape[0] - total_days].loc[:,['train','test','p5','p10','p15','p-5','p-10','p-15']]], axis=1, ignore_index=True)
     for i in range(90):
         train[i] = train.apply(divide, args=[i], axis=1)
     train.to_csv("../data/processed_data/" + str(name) + "__processed_data.csv")
