@@ -1,7 +1,6 @@
 from config import Config
 import pandas as pd
 import numpy as np
-from xgboost.sklearn import XGBRegressor, XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.externals import joblib
