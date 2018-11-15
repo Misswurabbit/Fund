@@ -1,10 +1,6 @@
 import pandas as pd
 from os import path
-from config import Config
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-import xlrd
+
 fund_type = ['bond','shares']
 
 def data_process():
