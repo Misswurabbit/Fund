@@ -24,9 +24,8 @@ def data_process():
     work_date_list = config.work_date_list
     name_list = config.name_list
     # 读取ODS_MDS.NAV文件
-    original_nav_data = pd.read_csv(config.original_nav_csv, encoding="gb18030")
+    train_data = pd.read_csv(config.original_nav_csv, encoding="gb18030", usecols=["SYMBOL", "PUBLISHDATE", "NAV1"])
     # 将‘SYMBOL’(基金名)，‘PUBLISHDATE’(发布时间)，‘NAV1’(基金净值)三列
-    train_data = original_nav_data[["SYMBOL", "PUBLISHDATE", "NAV1"]]
     # 初始化时间序列
     work_date_list = list(train_data.PUBLISHDATE.unique())
     work_date_list.sort()
@@ -35,13 +34,15 @@ def data_process():
         f.seek(0)
         f.truncate()
     # 开始对我们选取的基金数据进行处理
+    train = pd.DataFrame()
     for name in name_list:
         try:
-            each_fund_process(name, train_data, work_date_list)
+            train = train.append(each_fund_process(name, train_data, work_date_list))
         except:
             # 出现异常则记录出现异常的地方
             with open("log.txt", "a+") as f:
                 f.write("wrong file:" + str(name) + " \n")
+    train.to_csv("../data/processed_data/processed_data.csv",index=False)
 
 
 def each_fund_process(name, train_data, work_date_list):
@@ -94,8 +95,8 @@ def each_fund_process(name, train_data, work_date_list):
     train_data = pd.DataFrame(train)
     train_data['SYMBOL'] = name
     # 输出
-    train_data.to_csv("../data/processed_data/" + str(name) + "__processed_data.csv", index=False)
     print(str(name) + "  is  Over!!!!")
+    return train_data
 
 
 def model_insert(fund_nav, name):
@@ -133,6 +134,4 @@ def model_insert(fund_nav, name):
     fig.savefig("../data/processed_data/" + str(name) + "__processed_data.png")
     plt.close(fig)
     return fund_nav
-
-
 

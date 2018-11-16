@@ -9,7 +9,7 @@ from os import path
 label_name = ["p5", "p10", "p15", "p-5", "p-10", "p-15"]
 score_dict = {"p5": [], "p10": [], "p15": [], "p-5": [], "p-10": [], "p-15": [], "num": []}
 name_list = Config.name_list
-fund_type = ['shares_fund', 'mixed_fund', 'bond_fund', 'QDII_fund']
+fund_type = ['shares_fund', 'bond_fund']
 
 
 def model_training():
@@ -27,7 +27,7 @@ def model_training():
         # for num in range(len(data.columns)):
         #     data.rename(columns={str(num): num}, inplace=True)
         # 初始化训练集和测试集
-        train = np.array(np.var(data.loc[:, [num for num in range(90)]], axis=1)).reshape(-1, 1)
+        train = data.loc[:, [str(num) for num in range(90)]]
         target = data.loc[:, label_name]
         for label in label_name:
             # 模型初始化
