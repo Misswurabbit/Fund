@@ -1,17 +1,30 @@
 from os import path
 import pandas as pd
+import numpy as np
 import config
+
 
 def data_process():
     # 读入基金类别的原始表格
     fundtype = pd.read_csv(path.abspath(path.join(__file__, "../../data/original/ODS_MDS.FUNDTYPES.csv")),
-                           encoding="gb18030", usecols=["SYMBOL","FUNDTYPES2"])
+                           encoding="gb18030", usecols=["SYMBOL", "FUNDTYPES2", "CHANGEDATE", "ENDDATE"])
     # 对dataframe的dtypes数据格式进行处理
-    fundtype["SYMBOL"] = pd.to_numeric(fundtype["SYMBOL"], errors="coerce")
+    fundtype.rename(columns={'CHANGEDATE': "start", "ENDDATE": "end"}, inplace=True)
+    fundtype['start'] = pd.to_datetime(fundtype['start'])
+    fundtype['end'] = pd.to_datetime(fundtype['end'])
     # 建立一个‘SYMBOL’（基金序号）和‘TYPE’（基金的类型）相对应的dataframe以方便之后的操作
     fundtype = fundtype[fundtype["FUNDTYPES2"].isin([100101, 100201, 100301, 100401, 100501])]
+    fundtype.reset_index(inplace=True,drop=True)
+    for index in range(len(fundtype)):
+        if pd.isna(fundtype.loc[index, "end"]) or fundtype.loc[index, 'start'] > fundtype.loc[index, 'end']:
+            fundtype.loc[index, 'end'] = pd.datetime.now()
+    fundtype["SYMBOL"] = pd.to_numeric(fundtype["SYMBOL"], errors="coerce")
     temp = pd.read_csv("../data/processed_data/processed_data.csv")
     temp = temp.merge(fundtype, how="inner")
+    temp['date'] = pd.to_datetime(temp['date'])
+    temp = temp[temp['start']<temp['date']]
+    temp = temp[temp['date']<temp['end']]
+    temp.drop(['start','end'],inplace=True,axis =1)
     share_data = temp[temp.FUNDTYPES2.isin([100101, 100201])]
     d = share_data.describe()
     share_data['p5'] = share_data.max_ratio > d.loc["25%", "max_ratio"]
@@ -31,14 +44,6 @@ def data_process():
     share_data.to_csv("../data/processed_data/shares_fund_data.csv", index=False)
     bond_data.to_csv("../data/processed_data/bond_fund_data.csv", index=False)
     return
-
-
-
-
-
-
-
-
 
     # classfier = pd.DataFrame(columns=["SYMBOL", "TYPE"])
     # # 对所有选中的基金进行遍历

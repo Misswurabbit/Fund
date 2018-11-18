@@ -73,10 +73,15 @@ def each_fund_process(name, train_data, work_date_list):
     # ‘max_retio’和‘min_ratio’列分别用来记录 后30天中最大值/当天 的比值和 最小值/当天 的比值
     train["max_ratio"] = []
     train["min_ratio"] = []
+    train['date'] = []
     # 去掉开始90议案和最后30天的数据，之后对其中每一天的数据进行处理
     for index in range(train_days, len(train_data) - test_days):
         # 取121天的数据进行处理
         data = train_data[index - train_days:index + test_days + 1]
+        # 保存时间序列
+        date = data.index.tolist()
+        # 取该121天数据的第90天（也就是‘当天’）日期，有助于后续处理
+        train['date'].append(pd.to_datetime(date[90]))
         data.reset_index(drop=True, inplace=True)
         # 前90天的数据
         train_temp = data[0:train_days]

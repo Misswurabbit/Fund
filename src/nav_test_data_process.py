@@ -31,6 +31,6 @@ def data_process():
         target['p-10'] = target.min_ratio < 0.9
         target['p-15'] = target.min_ratio < 0.85
         target = target[['p5', 'p10', 'p15', 'p-5', 'p-10', 'p-15']]
-        train.to_csv("../../data/processed_data/"+type+"_test_data.csv",index=False)
-        target.to_csv("../../data/processed_data/"+type+"_target_data.csv", index=False)
+        train.to_csv("../data/processed_data/"+type+"_test_data.csv",index=False)
+        target.to_csv("../data/processed_data/"+type+"_target_data.csv", index=False)
         print("Over")
