@@ -42,7 +42,7 @@ def data_process():
             # 出现异常则记录出现异常的地方
             with open("log.txt", "a+") as f:
                 f.write("wrong file:" + str(name) + " \n")
-    train.to_csv("../data/processed_data/processed_data.csv",index=False)
+    train.to_csv("../data/processed_data/processed_data.csv", index=False)
 
 
 def each_fund_process(name, train_data, work_date_list):
@@ -67,7 +67,7 @@ def each_fund_process(name, train_data, work_date_list):
     train = {}
     for num in range(train_days):
         train[num] = []
-    #‘train’和‘test’列分别用来记录某一条数据中前90天中有多少条真实数据和后30天中有多少条真实数据
+    # ‘train’和‘test’列分别用来记录某一条数据中前90天中有多少条真实数据和后30天中有多少条真实数据
     train["train"] = []
     train["test"] = []
     # ‘max_retio’和‘min_ratio’列分别用来记录 后30天中最大值/当天 的比值和 最小值/当天 的比值
@@ -132,11 +132,10 @@ def model_insert(fund_nav, name):
             fund_nav.loc[str(date), "NAV1"] = result[num]
             num += 1
     # 画图及输出
-    fig = plt.figure()
-    plt.plot(train_index, target, "b*")
-    plt.plot(test_index, result, "ro")
-    # fig.show()
-    fig.savefig("../data/processed_data/" + str(name) + "__processed_data.png")
-    plt.close(fig)
+    # fig = plt.figure()
+    # plt.plot(train_index, target, "b*")
+    # plt.plot(test_index, result, "ro")
+    # # fig.show()
+    # fig.savefig("../data/processed_data/" + str(name) + "__processed_data.png")
+    # plt.close(fig)
     return fund_nav
-

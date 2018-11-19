@@ -26,8 +26,13 @@ def data_process():
     data.drop(['FUNDMG2', 'FUNDMG5'], inplace=True, axis=1)
     data = data[data['end'] > data['start']]
     temp = pd.read_csv("../data/processed_data/processed_data.csv")
-    temp.merge(data, on='SYMBOL', how='inner')
-    print("Over")
+    temp = temp.merge(data, on='SYMBOL', how='inner')
+    temp['date'] = pd.to_datetime(temp['date'])
+    temp = temp[temp['date'] <= temp['end']]
+    temp = temp[temp['date'] >= temp['start']]
+    temp.drop(['start', 'end'], inplace=True, axis=1)
+    temp.to_csv("../data/processed_data/processed_data.csv", index=False)
+    print("The work of adding manger feature  is over")
 
 
-data_process()
+

@@ -14,7 +14,7 @@ def data_process():
     fundtype['end'] = pd.to_datetime(fundtype['end'])
     # 建立一个‘SYMBOL’（基金序号）和‘TYPE’（基金的类型）相对应的dataframe以方便之后的操作
     fundtype = fundtype[fundtype["FUNDTYPES2"].isin([100101, 100201, 100301, 100401, 100501])]
-    fundtype.reset_index(inplace=True,drop=True)
+    fundtype.reset_index(inplace=True, drop=True)
     for index in range(len(fundtype)):
         if pd.isna(fundtype.loc[index, "end"]) or fundtype.loc[index, 'start'] > fundtype.loc[index, 'end']:
             fundtype.loc[index, 'end'] = pd.datetime.now()
@@ -22,25 +22,37 @@ def data_process():
     temp = pd.read_csv("../data/processed_data/processed_data.csv")
     temp = temp.merge(fundtype, how="inner")
     temp['date'] = pd.to_datetime(temp['date'])
-    temp = temp[temp['start']<temp['date']]
-    temp = temp[temp['date']<temp['end']]
-    temp.drop(['start','end'],inplace=True,axis =1)
+    temp = temp[temp['start'] <= temp['date']]
+    temp = temp[temp['date'] <= temp['end']]
+    temp.drop(['start', 'end'], inplace=True, axis=1)
     share_data = temp[temp.FUNDTYPES2.isin([100101, 100201])]
     d = share_data.describe()
-    share_data['p5'] = share_data.max_ratio > d.loc["25%", "max_ratio"]
-    share_data['p10'] = share_data.max_ratio > d.loc["50%", "max_ratio"]
-    share_data['p15'] = share_data.max_ratio > d.loc["75%", "max_ratio"]
-    share_data['p-5'] = share_data.min_ratio < d.loc["75%", "min_ratio"]
-    share_data['p-10'] = share_data.min_ratio < d.loc["50%", "min_ratio"]
-    share_data['p-15'] = share_data.min_ratio < d.loc["25%", "min_ratio"]
+    share_data['p5'] = share_data.max_ratio > 1.05
+    share_data['p10'] = share_data.max_ratio > 1.10
+    share_data['p15'] = share_data.max_ratio > 1.15
+    share_data['p-5'] = share_data.min_ratio < 0.95
+    share_data['p-10'] = share_data.min_ratio < 0.90
+    share_data['p-15'] = share_data.min_ratio < 0.85
+    # share_data['p5'] = share_data.max_ratio > d.loc["25%", "max_ratio"]
+    # share_data['p10'] = share_data.max_ratio > d.loc["50%", "max_ratio"]
+    # share_data['p15'] = share_data.max_ratio > d.loc["75%", "max_ratio"]
+    # share_data['p-5'] = share_data.min_ratio < d.loc["75%", "min_ratio"]
+    # share_data['p-10'] = share_data.min_ratio < d.loc["50%", "min_ratio"]
+    # share_data['p-15'] = share_data.min_ratio < d.loc["25%", "min_ratio"]
 
     bond_data = temp[temp.FUNDTYPES2.isin([100301, 100201])]
-    bond_data['p5'] = bond_data.max_ratio > d.loc["25%", "max_ratio"]
-    bond_data['p10'] = bond_data.max_ratio > d.loc["50%", "max_ratio"]
-    bond_data['p15'] = bond_data.max_ratio > d.loc["75%", "max_ratio"]
-    bond_data['p-5'] = bond_data.min_ratio < d.loc["75%", "min_ratio"]
-    bond_data['p-10'] = bond_data.min_ratio < d.loc["50%", "min_ratio"]
-    bond_data['p-15'] = bond_data.min_ratio < d.loc["25%", "min_ratio"]
+    bond_data['p5'] = bond_data.max_ratio > 1.02
+    bond_data['p10'] = bond_data.max_ratio > 1.04
+    bond_data['p15'] = bond_data.max_ratio > 1.06
+    bond_data['p-5'] = bond_data.min_ratio < 0.98
+    bond_data['p-10'] = bond_data.min_ratio < 0.96
+    bond_data['p-15'] = bond_data.min_ratio < 0.94
+    # bond_data['p5'] = bond_data.max_ratio > d.loc["25%", "max_ratio"]
+    # bond_data['p10'] = bond_data.max_ratio > d.loc["50%", "max_ratio"]
+    # bond_data['p15'] = bond_data.max_ratio > d.loc["75%", "max_ratio"]
+    # bond_data['p-5'] = bond_data.min_ratio < d.loc["75%", "min_ratio"]
+    # bond_data['p-10'] = bond_data.min_ratio < d.loc["50%", "min_ratio"]
+    # bond_data['p-15'] = bond_data.min_ratio < d.loc["25%", "min_ratio"]
     share_data.to_csv("../data/processed_data/shares_fund_data.csv", index=False)
     bond_data.to_csv("../data/processed_data/bond_fund_data.csv", index=False)
     return
